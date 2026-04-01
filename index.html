@@ -506,6 +506,46 @@
       border-color: var(--green-border);
     }
 
+    /* ── Provider Tabs ── */
+    .provider-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .provider-tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      background: white;
+      color: #92400e;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .provider-tab:hover { background: var(--amber-bg); }
+    .provider-tab.active {
+      background: #92400e;
+      color: white;
+      border-color: #92400e;
+    }
+    .provider-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .provider-tab.active .provider-dot { background: white !important; }
+    .provider-badge {
+      font-size: 0.7rem;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+    .provider-pane { }
+
     /* ── Job Match ── */
     .match-hero {
       display: flex;
@@ -664,21 +704,67 @@
 <!-- ═══════════════ MAIN ═══════════════ -->
 <div class="main">
 
-  <!-- API Key -->
+  <!-- API Key / Provider -->
   <div class="api-bar">
-    <div class="api-bar-row">
-      <label for="apiKey">🔑 Anthropic API Key</label>
-      <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
-      <select id="modelSelect" class="model-select" title="Choose Claude model">
-        <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (recommended)</option>
-        <option value="claude-opus-4-6">Claude Opus 4.6 (more powerful)</option>
-        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest)</option>
-      </select>
+    <!-- Provider tabs -->
+    <div class="provider-tabs">
+      <button class="provider-tab active" onclick="setProvider('anthropic')" id="tab-anthropic">
+        <span class="provider-dot" style="background:#d97706"></span> Anthropic (Claude)
+      </button>
+      <button class="provider-tab" onclick="setProvider('openrouter')" id="tab-openrouter">
+        <span class="provider-dot" style="background:#7c3aed"></span> OpenRouter <span class="provider-badge">Mistral · Gemma · Llama · +more</span>
+      </button>
     </div>
-    <p class="api-bar-note">
-      Your key is used only in this browser session and never transmitted anywhere except <code>api.anthropic.com</code>.
-      Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
-    </p>
+
+    <!-- Anthropic pane -->
+    <div id="pane-anthropic" class="provider-pane">
+      <div class="api-bar-row">
+        <label for="apiKey">🔑 Anthropic API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
+        <select id="modelSelect" class="model-select">
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6 — recommended</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6 — most powerful</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — fastest</option>
+        </select>
+      </div>
+      <p class="api-bar-note">Key stays in your browser — only sent to <code>api.anthropic.com</code>. Get one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+    </div>
+
+    <!-- OpenRouter pane -->
+    <div id="pane-openrouter" class="provider-pane" style="display:none">
+      <div class="api-bar-row">
+        <label for="orKey">🔑 OpenRouter Key</label>
+        <input type="password" id="orKey" placeholder="sk-or-v1-..." autocomplete="off" spellcheck="false" />
+        <select id="orModel" class="model-select">
+          <optgroup label="Mistral">
+            <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct (free)</option>
+            <option value="mistralai/mixtral-8x7b-instruct">Mixtral 8x7B Instruct</option>
+            <option value="mistralai/mistral-small">Mistral Small</option>
+          </optgroup>
+          <optgroup label="Google Gemma">
+            <option value="google/gemma-2-9b-it">Gemma 2 9B (free)</option>
+            <option value="google/gemma-2-27b-it">Gemma 2 27B</option>
+          </optgroup>
+          <optgroup label="Meta Llama">
+            <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B (free)</option>
+            <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+            <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+          </optgroup>
+          <optgroup label="Qwen">
+            <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B</option>
+            <option value="qwen/qwen-2.5-7b-instruct">Qwen 2.5 7B (free)</option>
+          </optgroup>
+          <optgroup label="DeepSeek">
+            <option value="deepseek/deepseek-chat">DeepSeek V3</option>
+            <option value="deepseek/deepseek-r1">DeepSeek R1</option>
+          </optgroup>
+          <optgroup label="Microsoft">
+            <option value="microsoft/phi-3-medium-128k-instruct">Phi-3 Medium 128k (free)</option>
+          </optgroup>
+        </select>
+      </div>
+      <p class="api-bar-note">Free-tier models marked "(free)". Key only sent to <code>openrouter.ai</code>. Get one at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>.</p>
+    </div>
   </div>
 
   <!-- Step 1: Resume -->
@@ -1291,8 +1377,23 @@ function renderMatch(raw) {
   });
 }
 
-// ── Claude API ──
+// ── Provider state ──
+let currentProvider = 'anthropic';
+
+function setProvider(p) {
+  currentProvider = p;
+  document.getElementById('pane-anthropic').style.display  = p === 'anthropic'  ? '' : 'none';
+  document.getElementById('pane-openrouter').style.display = p === 'openrouter' ? '' : 'none';
+  document.getElementById('tab-anthropic').classList.toggle('active',  p === 'anthropic');
+  document.getElementById('tab-openrouter').classList.toggle('active', p === 'openrouter');
+}
+
+// ── Unified API call (Anthropic or OpenRouter) ──
 async function callClaude(apiKey, model, userMessage) {
+  if (currentProvider === 'openrouter') {
+    return callOpenRouter(apiKey, model, userMessage);
+  }
+  // ── Anthropic ──
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -1307,24 +1408,46 @@ async function callClaude(apiKey, model, userMessage) {
       messages: [{ role: 'user', content: userMessage }]
     })
   });
-
   if (!resp.ok) {
-    let msg = `API error ${resp.status}`;
-    try {
-      const j = await resp.json();
-      msg = j.error?.message || msg;
-    } catch (_) {}
-    throw new Error(msg);
+    const j = await resp.json().catch(() => ({}));
+    throw new Error(j.error?.message || `Anthropic API error ${resp.status}`);
   }
-
   const data = await resp.json();
   return data.content[0].text;
 }
 
+async function callOpenRouter(apiKey, model, userMessage) {
+  const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.href,
+      'X-Title': 'Resume Tailor'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+  if (!resp.ok) {
+    const j = await resp.json().catch(() => ({}));
+    throw new Error(j.error?.message || `OpenRouter API error ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
 // ── Generate ──
 async function generate() {
-  const apiKey = document.getElementById('apiKey').value.trim();
-  const model  = document.getElementById('modelSelect').value;
+  const isOR  = currentProvider === 'openrouter';
+  const apiKey = isOR
+    ? document.getElementById('orKey').value.trim()
+    : document.getElementById('apiKey').value.trim();
+  const model  = isOR
+    ? document.getElementById('orModel').value
+    : document.getElementById('modelSelect').value;
   const resume = document.getElementById('resumeText').value.trim() || resumeContent.trim();
   const jd     = document.getElementById('jobDesc').value.trim();
   const email  = document.getElementById('hiringEmail').value.trim();
@@ -1332,7 +1455,7 @@ async function generate() {
   const cover  = document.getElementById('genCover').checked;
   const gap    = document.getElementById('skillsGap').checked;
 
-  if (!apiKey) { showError('Please enter your Anthropic API key.'); return; }
+  if (!apiKey) { showError(`Please enter your ${isOR ? 'OpenRouter' : 'Anthropic'} API key.`); return; }
   if (!resume) { showError('Please provide your resume — upload a file or paste the text.'); return; }
   if (!jd)     { showError('Please paste the job description.'); return; }
 
