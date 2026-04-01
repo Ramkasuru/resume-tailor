@@ -656,6 +656,7 @@
     <span class="pill">✓ Preserves your format</span>
     <span class="pill">✓ ATS-friendly output</span>
     <span class="pill">✓ Job Match score</span>
+    <span class="pill">✓ Cover letter</span>
     <span class="pill">✓ Optional outreach email</span>
   </div>
 </header>
@@ -753,6 +754,17 @@
 
     <div class="option-row">
       <div class="option-label">
+        <span>Generate Cover Letter</span>
+        <small>Write a tailored one-page cover letter grounded entirely in your resume — no em dashes, no filler.</small>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="genCover" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="option-row">
+      <div class="option-label">
         <span>Skills Gap Analysis</span>
         <small>Add a private note highlighting JD requirements not yet present in your resume.</small>
       </div>
@@ -770,6 +782,7 @@
   <div class="progress-bar" id="progressBar">
     <div class="progress-step" id="ps-resume"><div class="step-dot"></div><span>Tailoring resume to job description...</span></div>
     <div class="progress-step" id="ps-match"><div class="step-dot"></div><span>Scoring job match across 5 dimensions...</span></div>
+    <div class="progress-step" id="ps-cover" style="display:none"><div class="step-dot"></div><span>Writing tailored cover letter...</span></div>
     <div class="progress-step" id="ps-email" style="display:none"><div class="step-dot"></div><span>Drafting outreach email...</span></div>
     <div class="progress-step" id="ps-gap" style="display:none"><div class="step-dot"></div><span>Analyzing skills gap...</span></div>
   </div>
@@ -809,6 +822,14 @@
       <div class="result-actions">
         <button class="btn" id="copyEmail" onclick="copyText('emailOut', 'copyEmail')">📋 Copy</button>
         <button class="btn" onclick="downloadTxt('emailOut', 'outreach_email.txt')">⬇ Download .txt</button>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-cover">
+      <div class="result-content" id="coverOut"></div>
+      <div class="result-actions">
+        <button class="btn" id="copyCover" onclick="copyText('coverOut', 'copyCover')">📋 Copy</button>
+        <button class="btn" onclick="downloadTxt('coverOut', 'cover_letter.txt')">⬇ Download .txt</button>
       </div>
     </div>
 
@@ -1075,6 +1096,55 @@ ${jd}
 GAP ANALYSIS:`;
 }
 
+function coverPrompt(resume, jd) {
+  return `You are helping an early-career candidate or graduate student write a polished, tailored cover letter.
+
+ABSOLUTE RULES — NEVER VIOLATE:
+1. NEVER use em dashes (—). Replace with a comma, semicolon, colon, or regular hyphen (-) if punctuation is needed.
+2. TRUTHFULNESS: Only use facts, skills, experiences, and credentials that are explicitly in the resume. Do not invent or embellish anything.
+3. NO FILLER OPENERS: Do not start with "I am writing to express my interest", "I am excited to apply", "I hope this letter finds you well", or any variation. Begin with something specific and direct.
+4. TONE: Motivated early-career candidate or student. Genuine, confident, and concise — not corporate, not boastful.
+5. LENGTH: Strict one-page limit. Aim for 300-380 words in the body. Do not pad.
+6. NO CLICHES: Avoid "I am a quick learner", "team player", "passionate", "detail-oriented" unless directly supported by a concrete example from the resume.
+7. STRUCTURE: Standard professional cover letter format (see below).
+8. ATS-SAFE: Plain text only. No tables, no bullet points in the letter body, no special characters.
+
+STRUCTURE TO FOLLOW:
+[Candidate Name]
+[Email] | [Phone] | [LinkedIn or location — only if in resume]
+
+[Today's date: ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}]
+
+[Hiring Manager Name if determinable from JD, otherwise: Hiring Manager]
+[Company Name]
+
+Dear [Hiring Manager / name],
+
+[Paragraph 1 — 2-3 sentences: Who you are, what you are studying or have studied, and the specific role + company you are applying to. Be direct and specific.]
+
+[Paragraph 2 — 3-4 sentences: Connect 2 specific experiences or skills from your resume to the most important requirements in the JD. Name the project, role, or course. Be concrete.]
+
+[Paragraph 3 — 2-3 sentences: Why this company or role specifically appeals to you, grounded in something real in the JD (mission, product, team, domain). Do not be generic.]
+
+[Paragraph 4 — 1-2 sentences: Simple, direct closing. Express interest in discussing further. No begging, no over-eagerness.]
+
+Sincerely,
+[Candidate Name]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESUME (source of truth — use ONLY what is here):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${resume}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+JOB DESCRIPTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${jd}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY the cover letter text. No preamble, no commentary, no notes. First character must be the candidate's name.`;
+}
+
 function matchPrompt(resume, jd) {
   return `You are a career analyst. Evaluate how well the candidate's resume matches the job description, then return a JSON object — nothing else, no markdown fences, no commentary.
 
@@ -1259,6 +1329,7 @@ async function generate() {
   const jd     = document.getElementById('jobDesc').value.trim();
   const email  = document.getElementById('hiringEmail').value.trim();
   const multi  = document.getElementById('multiPage').checked;
+  const cover  = document.getElementById('genCover').checked;
   const gap    = document.getElementById('skillsGap').checked;
 
   if (!apiKey) { showError('Please enter your Anthropic API key.'); return; }
@@ -1267,7 +1338,7 @@ async function generate() {
 
   hideError();
   setLoading(true);
-  showProgress(!!email, gap);
+  showProgress(!!email, cover, gap);
 
   try {
     // Step 1: Tailor resume
@@ -1284,7 +1355,15 @@ async function generate() {
     renderMatch(matchRaw);
     setProgressStep('ps-match', 'done');
 
-    // Step 3: Email
+    // Step 3: Cover Letter
+    if (cover) {
+      setProgressStep('ps-cover', 'running');
+      const coverResult = await callClaude(apiKey, model, coverPrompt(resume, jd));
+      document.getElementById('coverOut').textContent = coverResult;
+      setProgressStep('ps-cover', 'done');
+    }
+
+    // Step 4: Email
     let emailResult = '';
     if (email) {
       setProgressStep('ps-email', 'running');
@@ -1293,7 +1372,7 @@ async function generate() {
       setProgressStep('ps-email', 'done');
     }
 
-    // Step 4: Gap
+    // Step 5: Gap
     let gapResult = '';
     if (gap) {
       setProgressStep('ps-gap', 'running');
@@ -1302,7 +1381,7 @@ async function generate() {
       setProgressStep('ps-gap', 'done');
     }
 
-    showResults(!!email, gap);
+    showResults(!!email, cover, gap);
   } catch (e) {
     showError('Generation failed: ' + e.message);
     document.getElementById('progressBar').classList.remove('show');
@@ -1319,7 +1398,8 @@ function setLoading(on) {
   document.getElementById('btnText').textContent = on ? 'Tailoring...' : 'Tailor My Resume';
 }
 
-function showProgress(withEmail, withGap) {
+function showProgress(withEmail, withCover, withGap) {
+  document.getElementById('ps-cover').style.display = withCover ? '' : 'none';
   document.getElementById('ps-email').style.display = withEmail ? '' : 'none';
   document.getElementById('ps-gap').style.display   = withGap   ? '' : 'none';
   document.getElementById('ps-match').style.display = '';
@@ -1328,7 +1408,7 @@ function showProgress(withEmail, withGap) {
 }
 
 function resetProgressSteps() {
-  ['ps-resume','ps-match','ps-email','ps-gap'].forEach(id => {
+  ['ps-resume','ps-match','ps-cover','ps-email','ps-gap'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('running','done');
   });
@@ -1340,13 +1420,14 @@ function setProgressStep(id, state) {
   if (state) el.classList.add(state);
 }
 
-function showResults(withEmail, withGap) {
+function showResults(withEmail, withCover, withGap) {
   const sec = document.getElementById('resultsSection');
   sec.classList.add('show');
 
   // Rebuild tab bar — match is always present
   let html = `<div class="tab-btn" data-tab="match"  onclick="switchTab('match')">🎯 Job Match</div>`;
   html +=    `<div class="tab-btn" data-tab="resume" onclick="switchTab('resume')">📄 Tailored Resume</div>`;
+  if (withCover) html += `<div class="tab-btn" data-tab="cover" onclick="switchTab('cover')">📝 Cover Letter</div>`;
   if (withEmail) html += `<div class="tab-btn" data-tab="email" onclick="switchTab('email')">✉ Outreach Email</div>`;
   if (withGap)   html += `<div class="tab-btn" data-tab="gap"   onclick="switchTab('gap')">🔍 Skills Gap</div>`;
   document.getElementById('tabBar').innerHTML = html;
