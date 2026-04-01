@@ -506,6 +506,122 @@
       border-color: var(--green-border);
     }
 
+    /* ── Job Match ── */
+    .match-hero {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 20px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .score-ring {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      flex-shrink: 0;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring-track { fill: none; stroke: #e2e8f0; stroke-width: 10; }
+    .score-ring-fill  { fill: none; stroke-width: 10; stroke-linecap: round;
+                        transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+    .score-ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .score-num  { font-size: 1.7rem; font-weight: 700; color: var(--text); }
+    .score-pct  { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+    .match-meta { flex: 1; min-width: 180px; }
+    .verdict-badge {
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 10px;
+    }
+    .verdict-strong   { background: #dcfce7; color: #14532d; }
+    .verdict-good     { background: #dbeafe; color: #1e3a8a; }
+    .verdict-moderate { background: #fef9c3; color: #713f12; }
+    .verdict-weak     { background: #fee2e2; color: #7f1d1d; }
+    .match-rec {
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+    .match-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .cat-bars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .cat-row  { display: flex; align-items: center; gap: 10px; }
+    .cat-name { font-size: 0.82rem; color: var(--text); width: 160px; flex-shrink: 0; }
+    .cat-bar-bg {
+      flex: 1;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .cat-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+    .cat-score { font-size: 0.78rem; font-weight: 600; color: var(--muted); width: 32px; text-align: right; flex-shrink: 0; }
+    .match-lists {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    @media (max-width: 560px) { .match-lists { grid-template-columns: 1fr; } }
+    .match-list-box {
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .match-list-box.strengths { background: var(--green-bg); border: 1px solid var(--green-border); }
+    .match-list-box.gaps      { background: var(--red-bg);   border: 1px solid var(--red-border); }
+    .match-list-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+    .match-list-box.strengths .match-list-title { color: var(--green); }
+    .match-list-box.gaps      .match-list-title { color: var(--red); }
+    .match-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .match-list li {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--text);
+      display: flex;
+      gap: 7px;
+      align-items: flex-start;
+    }
+    .match-list li::before { flex-shrink: 0; margin-top: 1px; }
+    .match-list-box.strengths .match-list li::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .match-list-box.gaps      .match-list li::before { content: '✗'; color: var(--red);   font-weight: 700; }
+    .match-loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
     /* ── Disclaimer ── */
     .disclaimer {
       background: var(--amber-bg);
@@ -539,6 +655,7 @@
     <span class="pill">✓ One-page constraint</span>
     <span class="pill">✓ Preserves your format</span>
     <span class="pill">✓ ATS-friendly output</span>
+    <span class="pill">✓ Job Match score</span>
     <span class="pill">✓ Optional outreach email</span>
   </div>
 </header>
@@ -652,6 +769,7 @@
   <!-- Progress -->
   <div class="progress-bar" id="progressBar">
     <div class="progress-step" id="ps-resume"><div class="step-dot"></div><span>Tailoring resume to job description...</span></div>
+    <div class="progress-step" id="ps-match"><div class="step-dot"></div><span>Scoring job match across 5 dimensions...</span></div>
     <div class="progress-step" id="ps-email" style="display:none"><div class="step-dot"></div><span>Drafting outreach email...</span></div>
     <div class="progress-step" id="ps-gap" style="display:none"><div class="step-dot"></div><span>Analyzing skills gap...</span></div>
   </div>
@@ -672,6 +790,10 @@
 
     <div class="tab-bar" id="tabBar">
       <div class="tab-btn active" data-tab="resume" onclick="switchTab('resume')">📄 Tailored Resume</div>
+    </div>
+
+    <div class="tab-panel" id="tab-match">
+      <div id="matchOut"><div class="match-loading">Calculating your job match score...</div></div>
     </div>
 
     <div class="tab-panel active" id="tab-resume">
@@ -953,6 +1075,152 @@ ${jd}
 GAP ANALYSIS:`;
 }
 
+function matchPrompt(resume, jd) {
+  return `You are a career analyst. Evaluate how well the candidate's resume matches the job description, then return a JSON object — nothing else, no markdown fences, no commentary.
+
+SCORING RULES:
+- Be honest and calibrated. Do not inflate scores to make the candidate feel good.
+- Score each category 0-100 based strictly on evidence in the resume vs requirements in the JD.
+- Overall score = weighted average: Technical Skills 30%, Experience 30%, Education 15%, Domain Knowledge 15%, Soft Skills 10%.
+- Verdict: "Strong Match" (≥80), "Good Match" (65-79), "Moderate Match" (45-64), "Weak Match" (<45).
+- Strengths: 3-5 specific things from the resume that directly satisfy JD requirements.
+- Gaps: 3-5 specific JD requirements not met by the resume. Be concrete (name the skill/tool/years).
+- Recommendation: 2 sentences. What should the candidate do before applying?
+
+Return EXACTLY this JSON shape (no extra keys, no comments):
+{
+  "overall": <integer 0-100>,
+  "verdict": "<Strong Match | Good Match | Moderate Match | Weak Match>",
+  "categories": [
+    {"name": "Technical Skills",      "score": <int>},
+    {"name": "Experience Level",      "score": <int>},
+    {"name": "Education",             "score": <int>},
+    {"name": "Domain Knowledge",      "score": <int>},
+    {"name": "Soft Skills & Culture", "score": <int>}
+  ],
+  "strengths": ["<string>", "<string>", "<string>"],
+  "gaps":      ["<string>", "<string>", "<string>"],
+  "recommendation": "<string>"
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESUME:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${resume}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+JOB DESCRIPTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${jd}`;
+}
+
+function barColor(score) {
+  if (score >= 75) return '#059669';
+  if (score >= 55) return '#2563eb';
+  if (score >= 35) return '#d97706';
+  return '#dc2626';
+}
+
+function ringColor(score) {
+  if (score >= 75) return '#059669';
+  if (score >= 55) return '#2563eb';
+  if (score >= 35) return '#d97706';
+  return '#dc2626';
+}
+
+function verdictClass(verdict) {
+  if (verdict === 'Strong Match')   return 'verdict-strong';
+  if (verdict === 'Good Match')     return 'verdict-good';
+  if (verdict === 'Moderate Match') return 'verdict-moderate';
+  return 'verdict-weak';
+}
+
+function renderMatch(raw) {
+  let data;
+  try {
+    // Strip markdown fences if model ignored instructions
+    const clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    data = JSON.parse(clean);
+  } catch(e) {
+    document.getElementById('matchOut').innerHTML =
+      `<div class="match-loading" style="color:var(--red)">Could not parse match score. Raw output:<br><pre style="font-size:0.75rem;text-align:left;margin-top:12px;white-space:pre-wrap">${raw}</pre></div>`;
+    return;
+  }
+
+  const circ = 2 * Math.PI * 45; // r=45
+  const offset = circ - (data.overall / 100) * circ;
+  const color  = ringColor(data.overall);
+
+  const catsHTML = data.categories.map(c => `
+    <div class="cat-row">
+      <span class="cat-name">${c.name}</span>
+      <div class="cat-bar-bg">
+        <div class="cat-bar-fill" style="width:${c.score}%;background:${barColor(c.score)}"></div>
+      </div>
+      <span class="cat-score">${c.score}%</span>
+    </div>`).join('');
+
+  const strengthsHTML = (data.strengths || []).map(s => `<li>${s}</li>`).join('');
+  const gapsHTML      = (data.gaps      || []).map(g => `<li>${g}</li>`).join('');
+
+  document.getElementById('matchOut').innerHTML = `
+    <div class="match-hero">
+      <div class="score-ring">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle class="score-ring-track" cx="55" cy="55" r="45"/>
+          <circle class="score-ring-fill" cx="55" cy="55" r="45"
+            stroke="${color}"
+            stroke-dasharray="${circ}"
+            stroke-dashoffset="${circ}"
+            id="ring-fill"/>
+        </svg>
+        <div class="score-ring-label">
+          <span class="score-num" id="score-num">0</span>
+          <span class="score-pct">/ 100</span>
+        </div>
+      </div>
+      <div class="match-meta">
+        <div class="verdict-badge ${verdictClass(data.verdict)}">${data.verdict}</div>
+        <div class="match-rec">${data.recommendation}</div>
+      </div>
+    </div>
+
+    <div class="match-section-title">Score Breakdown</div>
+    <div class="cat-bars">${catsHTML}</div>
+
+    <div class="match-lists">
+      <div class="match-list-box strengths">
+        <div class="match-list-title">What Works in Your Favour</div>
+        <ul class="match-list">${strengthsHTML}</ul>
+      </div>
+      <div class="match-list-box gaps">
+        <div class="match-list-title">Where You Fall Short</div>
+        <ul class="match-list">${gapsHTML}</ul>
+      </div>
+    </div>`;
+
+  // Animate ring and counter after paint
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const fill = document.getElementById('ring-fill');
+      if (fill) fill.style.strokeDashoffset = offset;
+      // Animate number
+      let start = 0;
+      const target = data.overall;
+      const duration = 1000;
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const el = document.getElementById('score-num');
+        if (el) el.textContent = Math.round(eased * target);
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, 50);
+  });
+}
+
 // ── Claude API ──
 async function callClaude(apiKey, model, userMessage) {
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1008,7 +1276,15 @@ async function generate() {
     document.getElementById('resumeOut').textContent = tailored;
     setProgressStep('ps-resume', 'done');
 
-    // Step 2: Email
+    // Step 2: Job Match (always runs)
+    setProgressStep('ps-match', 'running');
+    document.getElementById('matchOut').innerHTML =
+      '<div class="match-loading">Scoring your match across 5 dimensions...</div>';
+    const matchRaw = await callClaude(apiKey, model, matchPrompt(resume, jd));
+    renderMatch(matchRaw);
+    setProgressStep('ps-match', 'done');
+
+    // Step 3: Email
     let emailResult = '';
     if (email) {
       setProgressStep('ps-email', 'running');
@@ -1017,7 +1293,7 @@ async function generate() {
       setProgressStep('ps-email', 'done');
     }
 
-    // Step 3: Gap
+    // Step 4: Gap
     let gapResult = '';
     if (gap) {
       setProgressStep('ps-gap', 'running');
@@ -1046,12 +1322,13 @@ function setLoading(on) {
 function showProgress(withEmail, withGap) {
   document.getElementById('ps-email').style.display = withEmail ? '' : 'none';
   document.getElementById('ps-gap').style.display   = withGap   ? '' : 'none';
+  document.getElementById('ps-match').style.display = '';
   document.getElementById('progressBar').classList.add('show');
   resetProgressSteps();
 }
 
 function resetProgressSteps() {
-  ['ps-resume','ps-email','ps-gap'].forEach(id => {
+  ['ps-resume','ps-match','ps-email','ps-gap'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('running','done');
   });
@@ -1067,13 +1344,14 @@ function showResults(withEmail, withGap) {
   const sec = document.getElementById('resultsSection');
   sec.classList.add('show');
 
-  // Rebuild tab bar
-  let html = `<div class="tab-btn active" data-tab="resume" onclick="switchTab('resume')">📄 Tailored Resume</div>`;
+  // Rebuild tab bar — match is always present
+  let html = `<div class="tab-btn" data-tab="match"  onclick="switchTab('match')">🎯 Job Match</div>`;
+  html +=    `<div class="tab-btn" data-tab="resume" onclick="switchTab('resume')">📄 Tailored Resume</div>`;
   if (withEmail) html += `<div class="tab-btn" data-tab="email" onclick="switchTab('email')">✉ Outreach Email</div>`;
   if (withGap)   html += `<div class="tab-btn" data-tab="gap"   onclick="switchTab('gap')">🔍 Skills Gap</div>`;
   document.getElementById('tabBar').innerHTML = html;
 
-  switchTab('resume');
+  switchTab('match');
   sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
