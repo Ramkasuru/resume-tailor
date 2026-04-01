@@ -1455,7 +1455,27 @@ async function generate() {
   const cover  = document.getElementById('genCover').checked;
   const gap    = document.getElementById('skillsGap').checked;
 
-  if (!apiKey) { showError(`Please enter your ${isOR ? 'OpenRouter' : 'Anthropic'} API key.`); return; }
+  if (!apiKey) {
+    const providerName = isOR ? 'OpenRouter' : 'Anthropic';
+    const fieldHint    = isOR
+      ? 'Make sure the OpenRouter tab is selected and your sk-or-v1-... key is entered.'
+      : 'Make sure the Anthropic tab is selected and your sk-ant-... key is entered.';
+    showError(`Missing ${providerName} API key. ${fieldHint}`);
+    // Highlight the correct key field
+    const fieldId = isOR ? 'orKey' : 'apiKey';
+    const field = document.getElementById(fieldId);
+    if (field) { field.focus(); field.style.borderColor = 'var(--red)'; setTimeout(() => field.style.borderColor = '', 2500); }
+    return;
+  }
+  // Warn if key looks like it belongs to the other provider
+  if (!isOR && apiKey.startsWith('sk-or-')) {
+    showError('That looks like an OpenRouter key (sk-or-...). Switch to the OpenRouter tab or enter your Anthropic key.');
+    return;
+  }
+  if (isOR && apiKey.startsWith('sk-ant-')) {
+    showError('That looks like an Anthropic key (sk-ant-...). Switch to the Anthropic tab or enter your OpenRouter key.');
+    return;
+  }
   if (!resume) { showError('Please provide your resume — upload a file or paste the text.'); return; }
   if (!jd)     { showError('Please paste the job description.'); return; }
 
